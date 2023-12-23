@@ -33,7 +33,6 @@ COPY config.cross-native64 .config
 RUN PATH=/root/x-tools/x86_64-w64-mingw32/bin:$PATH ct-ng build && \
     mv /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/x86_64-w64-mingw32/sysroot/usr/x86_64-w64-mingw32/bin/*.dll /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/bin/ && \
     mv /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/x86_64-w64-mingw32/sysroot/lib/*.dll /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/bin/ && \
-    rm -rf /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/x86_64-w64-mingw32/sysroot/mingw && \
     rm -rf /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/x86_64-w64-mingw32/lib/lib* && \
     tar -achf x86_64-w64-mingw32.tar.zst -C /root/x-tools-cross-native/HOST-x86_64-w64-mingw32 x86_64-w64-mingw32
 
@@ -46,6 +45,5 @@ COPY config.cross-native32 .config
 RUN PATH=/root/x-tools/i686-w64-mingw32/bin:$PATH ct-ng build && \
     mv /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/i686-w64-mingw32/sysroot/usr/i686-w64-mingw32/bin/*.dll /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/bin/ && \
     mv /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/i686-w64-mingw32/sysroot/lib/*.dll /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/bin/ && \
-    rm -rf /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/i686-w64-mingw32/sysroot/mingw && \
     rm -rf /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/i686-w64-mingw32/lib/lib* && \
     tar -achf i686-w64-mingw32.tar.zst -C /root/x-tools-cross-native/HOST-i686-w64-mingw32 i686-w64-mingw32
