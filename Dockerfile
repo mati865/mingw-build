@@ -1,6 +1,6 @@
 FROM ubuntu:22.04
 
-RUN	apt-get update && DEBIAN_FRONTEND=noninteractive\
+RUN	apt-get update && DEBIAN_FRONTEND=noninteractive \
     apt-get install -y build-essential gcc-multilib wget flex texinfo unzip help2man file gawk libtool-bin bison libncurses-dev zstd
 
 WORKDIR /build
@@ -13,8 +13,8 @@ RUN tar xf ../crosstool-ng-*.tar* --strip-components 1
 
 COPY 000*.patch .
 
-RUN for i in *.patch;\
-    do patch -p1 -i "$i";\
+RUN for i in *.patch; \
+    do patch -p1 -i "$i"; \
     done
 
 # bootstrap because of the new mingw-w64 version
@@ -22,12 +22,18 @@ RUN ./bootstrap && ./configure && make install
 
 WORKDIR /build
 
+# Toolchains targeting Windows hosted on Linux
 RUN rm -rf crosstool-ng
 
 COPY config.cross64 .config
 
 RUN ct-ng build
 
+COPY config.cross32 .config
+
+RUN ct-ng build
+
+# Toolchains targeting Windows hosted on Windows 
 COPY config.cross-native64 .config
 
 RUN PATH=/root/x-tools/x86_64-w64-mingw32/bin:$PATH ct-ng build && \
@@ -35,10 +41,6 @@ RUN PATH=/root/x-tools/x86_64-w64-mingw32/bin:$PATH ct-ng build && \
     mv /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/x86_64-w64-mingw32/sysroot/lib/*.dll /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/bin/ && \
     rm -rf /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/x86_64-w64-mingw32/lib/lib* && \
     tar -achf x86_64-w64-mingw32.tar.zst -C /root/x-tools-cross-native/HOST-x86_64-w64-mingw32 x86_64-w64-mingw32
-
-COPY config.cross32 .config
-
-RUN ct-ng build
 
 COPY config.cross-native32 .config
 
