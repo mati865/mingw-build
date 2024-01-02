@@ -2,7 +2,7 @@
 
 set -ex
 
-COMMAND=podman
+COMMAND="{COMMAND:-podman}"
 
 id=$($COMMAND create mingw-build)
 
