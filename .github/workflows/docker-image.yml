@@ -19,13 +19,18 @@ jobs:
           remove-haskell: true
           remove-codeql: true
           overprovision-lvm: true
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build the Docker image
         run: docker build . --file Dockerfile --tag mingw-build
       - name: Copy artifacts
         run: COMMAND=docker ./copy.sh
-      - name: Upload artifats
-        uses: actions/upload-artifact@v3
+      - name: Upload x86_64 tarball
+        uses: actions/upload-artifact@v4
         with:
-          name: dist-without-markdown
-          path: "*.tar.zst"
+          name: x86_64-w64-mingw32.tar.zst
+          path: x86_64-w64-mingw32.tar.zst
+      - name: Upload i686 tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: i686-w64-mingw32.tar.zst
+          path: i686-w64-mingw32.tar.zst
