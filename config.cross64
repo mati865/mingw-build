@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# crosstool-NG 1.26.0.22_daf19e1 Configuration
+# crosstool-NG 1.26.0 Configuration
 #
 CT_CONFIGURE_has_static_link=y
 CT_CONFIGURE_has_cxx11=y
@@ -26,7 +26,7 @@ CT_CONFIGURE_has_sha1sum=y
 CT_CONFIGURE_has_sha256sum=y
 CT_CONFIGURE_has_sha512sum=y
 CT_CONFIGURE_has_install_with_strip_program=y
-CT_VERSION="1.26.0.22_daf19e1"
+CT_VERSION="1.26.0"
 CT_VCHECK=""
 CT_CONFIG_VERSION_ENV="4"
 CT_CONFIG_VERSION_CURRENT="4"
@@ -508,8 +508,8 @@ CT_CC_GCC_LIBSTDCXX_VERBOSE=m
 #
 CT_CC_CXA_ATEXIT=y
 CT_CC_GCC_TM_CLONE_REGISTRY=m
-# CT_CC_GCC_DISABLE_PCH is not set
-CT_CC_GCC_SJLJ_EXCEPTIONS=m
+CT_CC_GCC_DISABLE_PCH=y
+# CT_CC_GCC_SJLJ_EXCEPTIONS is not set
 CT_CC_GCC_LDBL_128=m
 # CT_CC_GCC_BUILD_ID is not set
 CT_CC_GCC_LNK_HASH_STYLE_DEFAULT=y
@@ -629,8 +629,8 @@ CT_MPC_PATCH_GLOBAL=y
 # CT_MPC_PATCH_LOCAL_BUNDLED is not set
 # CT_MPC_PATCH_NONE is not set
 CT_MPC_PATCH_ORDER="global"
-CT_MPC_V_1_3=y
-CT_MPC_VERSION="1.3.1"
+CT_MPC_V_1_2=y
+CT_MPC_VERSION="1.2.1"
 CT_MPC_MIRRORS="https://www.multiprecision.org/downloads $(CT_Mirrors GNU mpc)"
 CT_MPC_ARCHIVE_FILENAME="@{pkg_name}-@{version}"
 CT_MPC_ARCHIVE_DIRNAME="@{pkg_name}-@{version}"
