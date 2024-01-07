@@ -40,7 +40,7 @@ CT_MODULES=y
 #
 # crosstool-NG behavior
 #
-CT_OBSOLETE=y
+# CT_OBSOLETE is not set
 CT_EXPERIMENTAL=y
 CT_ALLOW_BUILD_AS_ROOT=y
 CT_ALLOW_BUILD_AS_ROOT_SURE=y
@@ -202,7 +202,10 @@ CT_TARGET_LDFLAGS=""
 #
 # General toolchain options
 #
-# CT_USE_SYSROOT is not set
+CT_FORCE_SYSROOT=y
+CT_USE_SYSROOT=y
+CT_SYSROOT_NAME="sysroot"
+CT_SYSROOT_DIR_PREFIX=""
 # CT_STATIC_TOOLCHAIN is not set
 CT_SHOW_CT_VERSION=y
 CT_TOOLCHAIN_PKGVERSION=""
@@ -615,7 +618,6 @@ CT_EXPAT_PATCH_GLOBAL=y
 # CT_EXPAT_PATCH_NONE is not set
 CT_EXPAT_PATCH_ORDER="global"
 CT_EXPAT_V_2_5=y
-# CT_EXPAT_V_2_4 is not set
 CT_EXPAT_VERSION="2.5.0"
 CT_EXPAT_MIRRORS="http://downloads.sourceforge.net/project/expat/expat/${CT_EXPAT_VERSION} https://github.com/libexpat/libexpat/releases/download/R_${CT_EXPAT_VERSION//./_}"
 CT_EXPAT_ARCHIVE_FILENAME="@{pkg_name}-@{version}"
@@ -671,7 +673,6 @@ CT_ISL_V_0_26=y
 # CT_ISL_V_0_17 is not set
 # CT_ISL_V_0_16 is not set
 # CT_ISL_V_0_15 is not set
-# CT_ISL_V_0_11 is not set
 CT_ISL_VERSION="0.26"
 CT_ISL_MIRRORS="https://libisl.sourceforge.io"
 CT_ISL_ARCHIVE_FILENAME="@{pkg_name}-@{version}"
@@ -699,8 +700,6 @@ CT_MPC_PATCH_GLOBAL=y
 # CT_MPC_PATCH_NONE is not set
 CT_MPC_PATCH_ORDER="global"
 CT_MPC_V_1_2=y
-# CT_MPC_V_1_1 is not set
-# CT_MPC_V_1_0 is not set
 CT_MPC_VERSION="1.2.1"
 CT_MPC_MIRRORS="https://www.multiprecision.org/downloads $(CT_Mirrors GNU mpc)"
 CT_MPC_ARCHIVE_FILENAME="@{pkg_name}-@{version}"
@@ -724,9 +723,6 @@ CT_MPFR_PATCH_GLOBAL=y
 # CT_MPFR_PATCH_NONE is not set
 CT_MPFR_PATCH_ORDER="global"
 CT_MPFR_V_4_2=y
-# CT_MPFR_V_4_1 is not set
-# CT_MPFR_V_4_0 is not set
-# CT_MPFR_V_3_1 is not set
 CT_MPFR_VERSION="4.2.1"
 CT_MPFR_MIRRORS="https://www.mpfr.org/mpfr-${CT_MPFR_VERSION} $(CT_Mirrors GNU mpfr)"
 CT_MPFR_ARCHIVE_FILENAME="@{pkg_name}-@{version}"
@@ -781,7 +777,6 @@ CT_ZLIB_PATCH_GLOBAL=y
 # CT_ZLIB_PATCH_NONE is not set
 CT_ZLIB_PATCH_ORDER="global"
 CT_ZLIB_V_1_2_13=y
-# CT_ZLIB_V_1_2_12 is not set
 CT_ZLIB_VERSION="1.2.13"
 CT_ZLIB_MIRRORS="https://github.com/madler/zlib/releases/download/v${CT_ZLIB_VERSION} https://www.zlib.net/"
 CT_ZLIB_ARCHIVE_FILENAME="@{pkg_name}-@{version}"
