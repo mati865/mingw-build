@@ -1,12 +1,11 @@
-name: Build Dockerfile and realease artifacts
+name: Build Dockerfile and release artifacts
 
-on: 
+on:
   push:
     tags:
-    - '*'
+      - "*"
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
 
