@@ -1,0 +1,29 @@
+From ffe8714a7a1ab7a24ccb6b4dff39b32b973f0468 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mateusz=20Miku=C5=82a?= <mati865@gmail.com>
+Date: Sat, 27 Jan 2024 13:39:08 +0100
+Subject: [PATCH] HACK: use host flags for native GDB build
+
+Otherwise it's built without any libraries like libiconv so UTF-8
+support is missing.
+---
+ scripts/build/debug/300-gdb.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/scripts/build/debug/300-gdb.sh b/scripts/build/debug/300-gdb.sh
+index de8d1b14..64c5a588 100644
+--- a/scripts/build/debug/300-gdb.sh
++++ b/scripts/build/debug/300-gdb.sh
+@@ -182,8 +182,8 @@ do_debug_gdb_build()
+             buildtype=native \
+             subdir=${subdir} \
+             host="${CT_TARGET}" \
+-            cflags="${CT_ALL_TARGET_CFLAGS}" \
+-            ldflags="${CT_ALL_TARGET_LDFLAGS}" \
++            cflags="${CT_CFLAGS_FOR_HOST}" \
++            ldflags="${CT_LDFLAGS_FOR_HOST}" \
+             static="${CT_GDB_NATIVE_STATIC}" \
+             static_libstdcxx="${CT_GDB_NATIVE_STATIC_LIBSTDCXX}" \
+             prefix=/usr \
+-- 
+2.34.1
+
