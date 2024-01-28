@@ -1,0 +1,27 @@
+From 8c8403ebe0481cf1e79c0755ffa27600aed10b93 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mateusz=20Miku=C5=82a?= <mati865@gmail.com>
+Date: Sun, 28 Jan 2024 20:04:56 +0100
+Subject: [PATCH] Fix glob in Binutils
+
+---
+ scripts/build/binutils/binutils.sh | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/scripts/build/binutils/binutils.sh b/scripts/build/binutils/binutils.sh
+index eff19c46..abb0123c 100644
+--- a/scripts/build/binutils/binutils.sh
++++ b/scripts/build/binutils/binutils.sh
+@@ -182,10 +182,6 @@ do_binutils_backend() {
+         extra_config+=("--without-zstd")
+     fi
+ 
+-    # Disable usage of glob for higher compatibility.
+-    # Not strictly needed for anything but GDB anyways.
+-    export ac_cv_func_glob=no
+-
+     CT_DoLog DEBUG "Extra config passed: '${extra_config[*]}'"
+ 
+     CT_DoExecLog CFG                                            \
+-- 
+2.34.1
+
