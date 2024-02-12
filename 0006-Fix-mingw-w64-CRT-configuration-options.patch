@@ -1,0 +1,25 @@
+From a8769a0a12a3ff7f813c906acafe0a85e7a941de Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mateusz=20Miku=C5=82a?= <mati865@gmail.com>
+Date: Mon, 12 Feb 2024 23:21:29 +0100
+Subject: [PATCH] Fix mingw-w64 CRT configuration options
+
+---
+ scripts/build/libc/mingw-w64.sh | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/scripts/build/libc/mingw-w64.sh b/scripts/build/libc/mingw-w64.sh
+index 2c10f05a..e644989d 100644
+--- a/scripts/build/libc/mingw-w64.sh
++++ b/scripts/build/libc/mingw-w64.sh
+@@ -188,6 +188,8 @@ mingw_w64_main()
+         --prefix=${MINGW_INSTALL_PREFIX} \
+         --build=${CT_BUILD} \
+         --host=${CT_TARGET} \
++        --enable-wildcard \
++        --disable-dependency-tracking \
+         "${crt_opts[@]}"
+ 
+     # mingw-w64-crt has a missing dependency occasionally breaking the
+-- 
+2.34.1
+
