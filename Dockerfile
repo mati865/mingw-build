@@ -27,16 +27,17 @@ RUN rm -rf crosstool-ng
 
 COPY config.cross64 .config
 
-RUN ct-ng build
+RUN ct-ng build && rm -rf /build/.build/x86_64-w64-mingw32
 
 COPY config.cross32 .config
 
-RUN ct-ng build
+RUN ct-ng build && rm -rf /build/.build/i686-w64-mingw32
 
 # Toolchains targeting Windows hosted on Windows 
 COPY config.cross-native64 .config
 
 RUN PATH=/root/x-tools/x86_64-w64-mingw32/bin:$PATH ct-ng build && \
+    rm -rf /build/.build/HOST-x86_64-w64-mingw32 && \
     mv /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/x86_64-w64-mingw32/sysroot/usr/x86_64-w64-mingw32/bin/*.dll /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/bin/ && \
     mv /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/x86_64-w64-mingw32/sysroot/lib/*.dll /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/bin/ && \
     rm -rf /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/x86_64-w64-mingw32/lib/lib* && \
@@ -49,6 +50,7 @@ RUN PATH=/root/x-tools/x86_64-w64-mingw32/bin:$PATH ct-ng build && \
 COPY config.cross-native32 .config
 
 RUN PATH=/root/x-tools/i686-w64-mingw32/bin:$PATH ct-ng build && \
+    rm -rf /build/.build/HOST-i686-w64-mingw32 && \
     mv /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/i686-w64-mingw32/sysroot/usr/i686-w64-mingw32/bin/*.dll /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/bin/ && \
     mv /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/i686-w64-mingw32/sysroot/lib/*.dll /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/bin/ && \
     rm -rf /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/i686-w64-mingw32/lib/lib* && \
