@@ -38,8 +38,8 @@ COPY config.cross-native64 .config
 
 RUN PATH=/root/x-tools/x86_64-w64-mingw32/bin:$PATH ct-ng build && \
     rm -rf /build/.build/HOST-x86_64-w64-mingw32 && \
-    mv /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/x86_64-w64-mingw32/sysroot/usr/x86_64-w64-mingw32/bin/*.dll /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/bin/ && \
-    mv /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/x86_64-w64-mingw32/sysroot/lib/*.dll /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/bin/ && \
+    cp /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/x86_64-w64-mingw32/sysroot/usr/x86_64-w64-mingw32/bin/*.dll /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/bin/ && \
+    cp /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/x86_64-w64-mingw32/sysroot/lib/*.dll /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/bin/ && \
     cp /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/bin/x86_64-w64-mingw32-gcc.exe /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/bin/gcc.exe && \
     cp /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/bin/x86_64-w64-mingw32-g++.exe /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/bin/g++.exe && \
     cp /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/x86_64-w64-mingw32/debug-root/usr/bin/gdb.exe /root/x-tools-cross-native/HOST-x86_64-w64-mingw32/x86_64-w64-mingw32/bin/gdb.exe && \
@@ -51,8 +51,8 @@ COPY config.cross-native32 .config
 
 RUN PATH=/root/x-tools/i686-w64-mingw32/bin:$PATH ct-ng build && \
     rm -rf /build/.build/HOST-i686-w64-mingw32 && \
-    mv /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/i686-w64-mingw32/sysroot/usr/i686-w64-mingw32/bin/*.dll /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/bin/ && \
-    mv /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/i686-w64-mingw32/sysroot/lib/*.dll /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/bin/ && \
+    cp /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/i686-w64-mingw32/sysroot/usr/i686-w64-mingw32/bin/*.dll /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/bin/ && \
+    cp /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/i686-w64-mingw32/sysroot/lib/*.dll /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/bin/ && \
     cp /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/bin/i686-w64-mingw32-gcc.exe /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/bin/gcc.exe && \
     cp /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/bin/i686-w64-mingw32-g++.exe /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/bin/g++.exe && \
     cp /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/i686-w64-mingw32/debug-root/usr/bin/gdb.exe /root/x-tools-cross-native/HOST-i686-w64-mingw32/i686-w64-mingw32/bin/gdb.exe && \
