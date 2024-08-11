@@ -374,7 +374,8 @@ CT_MINGW_W64_PATCH_GLOBAL=y
 # CT_MINGW_W64_PATCH_LOCAL_BUNDLED is not set
 # CT_MINGW_W64_PATCH_NONE is not set
 CT_MINGW_W64_PATCH_ORDER="global"
-CT_MINGW_W64_V_V11_0=y
+CT_MINGW_W64_V_V12_0=y
+# CT_MINGW_W64_V_V11_0 is not set
 # CT_MINGW_W64_V_V10_0 is not set
 # CT_MINGW_W64_V_V9_0 is not set
 # CT_MINGW_W64_V_V8_0 is not set
@@ -382,7 +383,7 @@ CT_MINGW_W64_V_V11_0=y
 # CT_MINGW_W64_V_V6_0 is not set
 # CT_MINGW_W64_V_V5_0 is not set
 # CT_MINGW_W64_V_V4_0 is not set
-CT_MINGW_W64_VERSION="v11.0.1"
+CT_MINGW_W64_VERSION="v12.0.0"
 CT_MINGW_W64_MIRRORS="http://downloads.sourceforge.net/sourceforge/mingw-w64 https://downloads.sourceforge.net/project/mingw-w64/mingw-w64/mingw-w64-release/"
 CT_MINGW_W64_ARCHIVE_FILENAME="@{pkg_name}-@{version}"
 CT_MINGW_W64_ARCHIVE_DIRNAME="@{pkg_name}-@{version}"
