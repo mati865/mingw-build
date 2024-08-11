@@ -1,0 +1,766 @@
+From ecc5e416181f39bed1b9690f4a9fd0178d797365 Mon Sep 17 00:00:00 2001
+From: Chris Packham <judge.packham@gmail.com>
+Date: Tue, 30 Jan 2024 12:57:27 +1300
+Subject: binutils: Add 2.42 release
+
+Add the new release and rebase the local patches. Add a new patch which
+resolves a build issue on macOS.
+
+https://sourceware.org/pipermail/binutils/2024-January/132213.html
+
+Signed-off-by: Chris Packham <judge.packham@gmail.com>
+Signed-off-by: Bryan Hundven <bryanhundven@gmail.com>
+---
+ packages/binutils/2.42/0000-sh-conf.patch     |  32 ++
+ .../2.42/0001-check_ldrunpath_length.patch    |  29 ++
+ ...reads-doesn-t-have-pthread_mutexattr.patch |  21 ++
+ ...-t-link-to-libfl-as-it-s-unnecessary.patch | 110 +++++++
+ ...binary-cc-include-string-not-cstring.patch |  20 ++
+ .../binutils/2.42/0005-Fix-darwin-build.patch |  70 +++++
+ packages/binutils/2.42/0006-sysroot.patch     |  45 +++
+ .../2.42/0007-poison-system-directories.patch | 283 ++++++++++++++++++
+ ...-Deal-with-absence-of-uchar-on-macOS.patch |  41 +++
+ packages/binutils/2.42/chksum                 |  12 +
+ packages/binutils/2.42/version.desc           |   0
+ 11 files changed, 663 insertions(+)
+ create mode 100644 packages/binutils/2.42/0000-sh-conf.patch
+ create mode 100644 packages/binutils/2.42/0001-check_ldrunpath_length.patch
+ create mode 100644 packages/binutils/2.42/0002-MinGW-w64-winpthreads-doesn-t-have-pthread_mutexattr.patch
+ create mode 100644 packages/binutils/2.42/0003-Don-t-link-to-libfl-as-it-s-unnecessary.patch
+ create mode 100644 packages/binutils/2.42/0004-Darwin-gold-binary-cc-include-string-not-cstring.patch
+ create mode 100644 packages/binutils/2.42/0005-Fix-darwin-build.patch
+ create mode 100644 packages/binutils/2.42/0006-sysroot.patch
+ create mode 100644 packages/binutils/2.42/0007-poison-system-directories.patch
+ create mode 100644 packages/binutils/2.42/0008-gold-Deal-with-absence-of-uchar-on-macOS.patch
+ create mode 100644 packages/binutils/2.42/chksum
+ create mode 100644 packages/binutils/2.42/version.desc
+
+diff --git a/packages/binutils/2.42/0000-sh-conf.patch b/packages/binutils/2.42/0000-sh-conf.patch
+new file mode 100644
+index 00000000..98114f06
+--- /dev/null
++++ b/packages/binutils/2.42/0000-sh-conf.patch
+@@ -0,0 +1,32 @@
++From feb95096c21b037cf8fe3a6abc54e88853f29f64 Mon Sep 17 00:00:00 2001
++From: Chris Packham <judge.packham@gmail.com>
++Date: Mon, 8 Aug 2022 20:31:10 +1200
++Subject: [PATCH] sh conf
++
++---
++ configure    |    2 +-
++ configure.ac |    2 +-
++ 2 files changed, 2 insertions(+), 2 deletions(-)
++
++--- a/configure
+++++ b/configure
++@@ -4042,7 +4042,7 @@
++   nvptx*-*-*)
++     noconfigdirs="$noconfigdirs target-libssp target-libstdc++-v3 target-libobjc"
++     ;;
++-  sh-*-*)
+++  sh*-*-*)
++     case "${target}" in
++       sh*-*-elf)
++          ;;
++--- a/configure.ac
+++++ b/configure.ac
++@@ -1269,7 +1269,7 @@
++   nvptx*-*-*)
++     noconfigdirs="$noconfigdirs target-libssp target-libstdc++-v3 target-libobjc"
++     ;;
++-  sh-*-*)
+++  sh*-*-*)
++     case "${target}" in
++       sh*-*-elf)
++          ;;
+diff --git a/packages/binutils/2.42/0001-check_ldrunpath_length.patch b/packages/binutils/2.42/0001-check_ldrunpath_length.patch
+new file mode 100644
+index 00000000..477019ed
+--- /dev/null
++++ b/packages/binutils/2.42/0001-check_ldrunpath_length.patch
+@@ -0,0 +1,29 @@
++From db50df5d5a92328f2804e4e466e8e5f6e42ea1a4 Mon Sep 17 00:00:00 2001
++From: Chris Packham <judge.packham@gmail.com>
++Date: Mon, 8 Aug 2022 20:36:31 +1200
++Subject: [PATCH] check_ldrunpath_length
++
++---
++ ld/ldelf.c |    4 ++++
++ 1 file changed, 4 insertions(+)
++
++--- a/ld/ldelf.c
+++++ b/ld/ldelf.c
++@@ -1130,6 +1130,8 @@
++ 		  && command_line.rpath == NULL)
++ 		{
++ 		  path = (const char *) getenv ("LD_RUN_PATH");
+++		  if (path && *path == '\0')
+++		    path = NULL;
++ 		  if (path
++ 		      && ldelf_search_needed (path, &n, force,
++ 					      is_linux, elfsize))
++@@ -1805,6 +1807,8 @@
++   rpath = command_line.rpath;
++   if (rpath == NULL)
++     rpath = (const char *) getenv ("LD_RUN_PATH");
+++  if (rpath && *rpath == '\0')
+++    rpath = NULL;
++ 
++   for (abfd = link_info.input_bfds; abfd; abfd = abfd->link.next)
++     if (bfd_get_flavour (abfd) == bfd_target_elf_flavour)
+diff --git a/packages/binutils/2.42/0002-MinGW-w64-winpthreads-doesn-t-have-pthread_mutexattr.patch b/packages/binutils/2.42/0002-MinGW-w64-winpthreads-doesn-t-have-pthread_mutexattr.patch
+new file mode 100644
+index 00000000..74290812
+--- /dev/null
++++ b/packages/binutils/2.42/0002-MinGW-w64-winpthreads-doesn-t-have-pthread_mutexattr.patch
+@@ -0,0 +1,21 @@
++From ea2133b62542ca5c66027e9703ce1f90822e7e43 Mon Sep 17 00:00:00 2001
++From: Chris Packham <judge.packham@gmail.com>
++Date: Mon, 8 Aug 2022 20:37:03 +1200
++Subject: [PATCH] MinGW w64 winpthreads doesn't have
++ pthread_mutexattr_settype
++
++---
++ gold/gold-threads.cc |    2 +-
++ 1 file changed, 1 insertion(+), 1 deletion(-)
++
++--- a/gold/gold-threads.cc
+++++ b/gold/gold-threads.cc
++@@ -101,7 +101,7 @@
++   int err = pthread_mutexattr_init(&attr);
++   if (err != 0)
++     gold_fatal(_("pthead_mutexattr_init failed: %s"), strerror(err));
++-#ifdef PTHREAD_MUTEX_ADAPTIVE_NP
+++#if defined(PTHREAD_MUTEX_ADAPTIVE_NP) && !defined(_WIN32)
++   err = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ADAPTIVE_NP);
++   if (err != 0)
++     gold_fatal(_("pthread_mutexattr_settype failed: %s"), strerror(err));
+diff --git a/packages/binutils/2.42/0003-Don-t-link-to-libfl-as-it-s-unnecessary.patch b/packages/binutils/2.42/0003-Don-t-link-to-libfl-as-it-s-unnecessary.patch
+new file mode 100644
+index 00000000..fbe7a263
+--- /dev/null
++++ b/packages/binutils/2.42/0003-Don-t-link-to-libfl-as-it-s-unnecessary.patch
+@@ -0,0 +1,110 @@
++From d82ca73b6cdac3168494e8e288463b1f5d54d1bc Mon Sep 17 00:00:00 2001
++From: Chris Packham <judge.packham@gmail.com>
++Date: Mon, 8 Aug 2022 20:37:24 +1200
++Subject: [PATCH] Don't link to libfl as it's unnecessary
++
++---
++ binutils/configure    |    3 +++
++ binutils/configure.ac |    3 +++
++ gas/configure         |    3 +++
++ gas/configure.ac      |    3 +++
++ ld/configure          |    3 +++
++ ld/configure.ac       |    3 +++
++ 6 files changed, 18 insertions(+)
++
++--- a/binutils/configure
+++++ b/binutils/configure
++@@ -12306,6 +12306,7 @@
++ done
++ test -n "$YACC" || YACC="yacc"
++ 
+++save_LIBS=$LIBS
++ for ac_prog in flex lex
++ do
++   # Extract the first word of "$ac_prog", so it can be a program name with args.
++@@ -12469,6 +12470,8 @@
++ if test "$LEX" = :; then
++   LEX=${am_missing_run}flex
++ fi
+++LIBS=$save_LIBS
+++LEXLIB=
++ 
++ ALL_LINGUAS="bg ca da es fi fr hr id it ja pt ro ru rw sk sr sv tr uk vi zh_CN zh_TW"
++ 
++--- a/binutils/configure.ac
+++++ b/binutils/configure.ac
++@@ -152,7 +152,10 @@
++ fi
++ 
++ AC_PROG_YACC
+++save_LIBS=$LIBS
++ AM_PROG_LEX
+++LIBS=$save_LIBS
+++LEXLIB=
++ 
++ ALL_LINGUAS="bg ca da es fi fr hr id it ja pt ro ru rw sk sr sv tr uk vi zh_CN zh_TW"
++ ZW_GNU_GETTEXT_SISTER_DIR
++--- a/gas/configure
+++++ b/gas/configure
++@@ -13054,6 +13054,7 @@
++ done
++ test -n "$YACC" || YACC="yacc"
++ 
+++save_LIBS=$LIBS
++ for ac_prog in flex lex
++ do
++   # Extract the first word of "$ac_prog", so it can be a program name with args.
++@@ -13217,6 +13218,8 @@
++ if test "$LEX" = :; then
++   LEX=${am_missing_run}flex
++ fi
+++LIBS=$save_LIBS
+++LEXLIB=
++ 
++ ALL_LINGUAS="es fi fr id ja ru rw sv tr uk zh_CN"
++ 
++--- a/gas/configure.ac
+++++ b/gas/configure.ac
++@@ -959,7 +959,10 @@
++ AC_DEFINE_UNQUOTED(TARGET_OS,		"${target_os}",    [Target OS.])
++ 
++ AC_PROG_YACC
+++save_LIBS=$LIBS
++ AM_PROG_LEX
+++LIBS=$save_LIBS
+++LEXLIB=
++ 
++ ALL_LINGUAS="es fi fr id ja ru rw sv tr uk zh_CN"
++ ZW_GNU_GETTEXT_SISTER_DIR
++--- a/ld/configure
+++++ b/ld/configure
++@@ -18474,6 +18474,7 @@
++ done
++ test -n "$YACC" || YACC="yacc"
++ 
+++save_LIBS=$LIBS
++ for ac_prog in flex lex
++ do
++   # Extract the first word of "$ac_prog", so it can be a program name with args.
++@@ -18637,6 +18638,8 @@
++ if test "$LEX" = :; then
++   LEX=${am_missing_run}flex
++ fi
+++LIBS=$save_LIBS
+++LEXLIB=
++ 
++ 
++ { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable maintainer-specific portions of Makefiles" >&5
++--- a/ld/configure.ac
+++++ b/ld/configure.ac
++@@ -375,7 +375,10 @@
++ AC_EXEEXT
++ 
++ AC_PROG_YACC
+++save_LIBS=$LIBS
++ AM_PROG_LEX
+++LIBS=$save_LIBS
+++LEXLIB=
++ 
++ AM_MAINTAINER_MODE
++ AM_CONDITIONAL(GENINSRC_NEVER, false)
+diff --git a/packages/binutils/2.42/0004-Darwin-gold-binary-cc-include-string-not-cstring.patch b/packages/binutils/2.42/0004-Darwin-gold-binary-cc-include-string-not-cstring.patch
+new file mode 100644
+index 00000000..e3c97f38
+--- /dev/null
++++ b/packages/binutils/2.42/0004-Darwin-gold-binary-cc-include-string-not-cstring.patch
+@@ -0,0 +1,20 @@
++From bfe2ccf8b3bc264068d03d333f2d4222ebb62f1a Mon Sep 17 00:00:00 2001
++From: Chris Packham <judge.packham@gmail.com>
++Date: Mon, 8 Aug 2022 20:37:47 +1200
++Subject: [PATCH] Darwin gold binary cc include string not cstring
++
++---
++ gold/binary.cc |    2 +-
++ 1 file changed, 1 insertion(+), 1 deletion(-)
++
++--- a/gold/binary.cc
+++++ b/gold/binary.cc
++@@ -23,7 +23,7 @@
++ #include "gold.h"
++ 
++ #include <cerrno>
++-#include <cstring>
+++#include <string>
++ 
++ #include "elfcpp.h"
++ #include "stringpool.h"
+diff --git a/packages/binutils/2.42/0005-Fix-darwin-build.patch b/packages/binutils/2.42/0005-Fix-darwin-build.patch
+new file mode 100644
+index 00000000..d6e98ab5
+--- /dev/null
++++ b/packages/binutils/2.42/0005-Fix-darwin-build.patch
+@@ -0,0 +1,70 @@
++From c0e2c435788e702e35c1e00b66cbb99c157e51a4 Mon Sep 17 00:00:00 2001
++From: Andrew Hsieh <andrewhsieh@google.com>
++Date: Wed, 18 Mar 2015 10:57:24 +0800
++Subject: [PATCH] Fix darwin build
++
++1. In Drawin PTHREAD_ONCE_INIT is {0x30B1BCBA, {0}} and the GCC < 4.4
++   doesn't support ended initializer list
++2. wcsncasecmp doesn't exist in MacSDK10.6.x
++
++Change-Id: I69204a72f853f5263dffedc448379d75ed4eca2e
++---
++ bfd/peXXigen.c       |   22 ++++++++++++++++++++++
++ gold/gold-threads.cc |   15 ++++++++++++---
++ 2 files changed, 34 insertions(+), 3 deletions(-)
++
++--- a/bfd/peXXigen.c
+++++ b/bfd/peXXigen.c
++@@ -3665,6 +3665,28 @@
++ }
++ #endif /* not Cygwin/Mingw */
++ 
+++#if defined __APPLE__ && __DARWIN_C_LEVEL < 200809L
+++/* wcsncasecmp isn't always defined in Mac SDK */
+++static int
+++wcsncasecmp(const wchar_t *s1, const wchar_t *s2, size_t n)
+++{
+++  wchar_t c1, c2;
+++
+++  if (n == 0)
+++    return (0);
+++  for (; *s1; s1++, s2++)
+++  {
+++    c1 = towlower(*s1);
+++    c2 = towlower(*s2);
+++    if (c1 != c2)
+++      return ((int)c1 - c2);
+++    if (--n == 0)
+++      return (0);
+++  }
+++  return (-*s2);
+++}
+++#endif
+++
++ /* Perform a comparison of two entries.  */
++ static signed int
++ rsrc_cmp (bool is_name, rsrc_entry * a, rsrc_entry * b)
++--- a/gold/gold-threads.cc
+++++ b/gold/gold-threads.cc
++@@ -284,9 +284,18 @@
++ class Once_initialize
++ {
++  public:
++-  Once_initialize()
++-    : once_(PTHREAD_ONCE_INIT)
++-  { }
+++   Once_initialize()
+++#if !defined(__APPLE__)
+++     : once_(PTHREAD_ONCE_INIT)
+++   { }
+++#else
+++// In Drawin PTHREAD_ONCE_INIT is {0x30B1BCBA, {0}} and the GCC < 4.4 doesn't support
+++// extended initializer list as above */
+++   {
+++     pthread_once_t once_2 = PTHREAD_ONCE_INIT;
+++     once_ = once_2;
+++   }
+++#endif
++ 
++   // Return a pointer to the pthread_once_t variable.
++   pthread_once_t*
+diff --git a/packages/binutils/2.42/0006-sysroot.patch b/packages/binutils/2.42/0006-sysroot.patch
+new file mode 100644
+index 00000000..a9620547
+--- /dev/null
++++ b/packages/binutils/2.42/0006-sysroot.patch
+@@ -0,0 +1,45 @@
++From 3f902fa5e378510db27583dd6900fd5326d35f9e Mon Sep 17 00:00:00 2001
++From: Sven Rebhan <odinshorse@googlemail.com>
++Date: Mon, 8 Aug 2022 20:46:29 +1200
++Subject: [PATCH] sysroot
++
++Always try to prepend the sysroot prefix to absolute filenames first.
++
++http://bugs.gentoo.org/275666
++http://sourceware.org/bugzilla/show_bug.cgi?id=10340
++
++Signed-off-by: Sven Rebhan <odinshorse@googlemail.com>
++---
++ ld/ldfile.c |   11 +++++++++--
++ 1 file changed, 9 insertions(+), 2 deletions(-)
++
++--- a/ld/ldfile.c
+++++ b/ld/ldfile.c
++@@ -554,18 +554,25 @@
++      directory first.  */
++   if (!entry->flags.maybe_archive)
++     {
++-      if (entry->flags.sysrooted && IS_ABSOLUTE_PATH (entry->filename))
+++      /* For absolute pathnames, try to always open the file in the
+++	 sysroot first. If this fails, try to open the file at the
+++	 given location.  */
+++      entry->flags.sysrooted = is_sysrooted_pathname (entry->filename);
+++      if (!entry->flags.sysrooted && IS_ABSOLUTE_PATH (entry->filename)
+++	  && ld_sysroot)
++ 	{
++ 	  char *name = concat (ld_sysroot, entry->filename,
++ 			       (const char *) NULL);
++ 	  if (ldfile_try_open_bfd (name, entry))
++ 	    {
++ 	      entry->filename = name;
+++	      entry->flags.sysrooted = true;
++ 	      return true;
++ 	    }
++ 	  free (name);
++ 	}
++-      else if (ldfile_try_open_bfd (entry->filename, entry))
+++
+++      if (ldfile_try_open_bfd (entry->filename, entry))
++ 	return true;
++ 
++       if (IS_ABSOLUTE_PATH (entry->filename))
+diff --git a/packages/binutils/2.42/0007-poison-system-directories.patch b/packages/binutils/2.42/0007-poison-system-directories.patch
+new file mode 100644
+index 00000000..5e32a21c
+--- /dev/null
++++ b/packages/binutils/2.42/0007-poison-system-directories.patch
+@@ -0,0 +1,283 @@
++From 8198c060189b03261991a99ca93bba0f9be5e900 Mon Sep 17 00:00:00 2001
++From: Scott Garman <scott.a.garman@intel.com>
++Date: Mon, 8 Aug 2022 20:48:32 +1200
++Subject: [PATCH] poison system directories
++
++Patch adapted to binutils 2.23.2 and extended to use
++BR_COMPILER_PARANOID_UNSAFE_PATH by Thomas Petazzoni.
++
++[Gustavo: adapt to binutils 2.25]
++Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
++Signed-off-by: Gustavo Zacarias <gustavo@zacarias.com.ar>
++
++Upstream-Status: Inappropriate [distribution: codesourcery]
++
++Patch originally created by Mark Hatle, forward-ported to
++binutils 2.21 by Scott Garman.
++
++purpose:  warn for uses of system directories when cross linking
++
++Code Merged from Sourcery G++ binutils 2.19 - 4.4-277
++
++2008-07-02  Joseph Myers  <joseph@codesourcery.com>
++
++    ld/
++    * ld.h (args_type): Add error_poison_system_directories.
++    * ld.texinfo (--error-poison-system-directories): Document.
++    * ldfile.c (ldfile_add_library_path): Check
++    command_line.error_poison_system_directories.
++    * ldmain.c (main): Initialize
++    command_line.error_poison_system_directories.
++    * lexsup.c (enum option_values): Add
++    OPTION_ERROR_POISON_SYSTEM_DIRECTORIES.
++    (ld_options): Add --error-poison-system-directories.
++    (parse_args): Handle new option.
++
++2007-06-13  Joseph Myers  <joseph@codesourcery.com>
++
++    ld/
++    * config.in: Regenerate.
++    * ld.h (args_type): Add poison_system_directories.
++    * ld.texinfo (--no-poison-system-directories): Document.
++    * ldfile.c (ldfile_add_library_path): Check
++    command_line.poison_system_directories.
++    * ldmain.c (main): Initialize
++    command_line.poison_system_directories.
++    * lexsup.c (enum option_values): Add
++    OPTION_NO_POISON_SYSTEM_DIRECTORIES.
++    (ld_options): Add --no-poison-system-directories.
++    (parse_args): Handle new option.
++
++2007-04-20  Joseph Myers  <joseph@codesourcery.com>
++
++    Merge from Sourcery G++ binutils 2.17:
++
++    2007-03-20  Joseph Myers  <joseph@codesourcery.com>
++    Based on patch by Mark Hatle <mark.hatle@windriver.com>.
++    ld/
++    * configure.ac (--enable-poison-system-directories): New option.
++    * configure, config.in: Regenerate.
++    * ldfile.c (ldfile_add_library_path): If
++    ENABLE_POISON_SYSTEM_DIRECTORIES defined, warn for use of /lib,
++    /usr/lib, /usr/local/lib or /usr/X11R6/lib.
++
++Signed-off-by: Mark Hatle <mark.hatle@windriver.com>
++Signed-off-by: Scott Garman <scott.a.garman@intel.com>
++---
++ ld/config.in    |    3 +++
++ ld/configure    |   14 ++++++++++++++
++ ld/configure.ac |   10 ++++++++++
++ ld/ld.h         |    8 ++++++++
++ ld/ld.texi      |   12 ++++++++++++
++ ld/ldfile.c     |   17 +++++++++++++++++
++ ld/ldlex.h      |    2 ++
++ ld/ldmain.c     |    2 ++
++ ld/lexsup.c     |   21 +++++++++++++++++++++
++ 9 files changed, 89 insertions(+)
++
++--- a/ld/config.in
+++++ b/ld/config.in
++@@ -70,6 +70,9 @@
++    language is requested. */
++ #undef ENABLE_NLS
++ 
+++/* Define to warn for use of native system library directories */
+++#undef ENABLE_POISON_SYSTEM_DIRECTORIES
+++
++ /* Additional extension a shared object might have. */
++ #undef EXTRA_SHLIB_EXTENSION
++ 
++--- a/ld/configure
+++++ b/ld/configure
++@@ -844,6 +844,7 @@
++ enable_targets
++ enable_64_bit_bfd
++ with_sysroot
+++enable_poison_system_directories
++ enable_gold
++ enable_got
++ enable_compressed_debug_sections
++@@ -1534,6 +1535,8 @@
++   --enable-checking       enable run-time checks
++   --enable-targets        alternative target configurations
++   --enable-64-bit-bfd     64-bit support (on hosts with narrower word sizes)
+++  --enable-poison-system-directories
+++                          warn for use of native system library directories
++   --enable-gold[=ARG]     build gold [ARG={default,yes,no}]
++   --enable-got=<type>     GOT handling scheme (target, single, negative,
++                           multigot)
++@@ -15587,7 +15590,18 @@
++ fi
++ 
++ 
+++# Check whether --enable-poison-system-directories was given.
+++if test "${enable_poison_system_directories+set}" = set; then :
+++  enableval=$enable_poison_system_directories;
+++else
+++  enable_poison_system_directories=no
+++fi
+++
+++if test "x${enable_poison_system_directories}" = "xyes"; then
++ 
+++$as_echo "#define ENABLE_POISON_SYSTEM_DIRECTORIES 1" >>confdefs.h
+++
+++fi
++ 
++ # Check whether --enable-got was given.
++ if test "${enable_got+set}" = set; then :
++--- a/ld/configure.ac
+++++ b/ld/configure.ac
++@@ -103,6 +103,16 @@
++ AC_SUBST(TARGET_SYSTEM_ROOT)
++ AC_SUBST(TARGET_SYSTEM_ROOT_DEFINE)
++ 
+++AC_ARG_ENABLE([poison-system-directories],
+++         AS_HELP_STRING([--enable-poison-system-directories],
+++                [warn for use of native system library directories]),,
+++         [enable_poison_system_directories=no])
+++if test "x${enable_poison_system_directories}" = "xyes"; then
+++  AC_DEFINE([ENABLE_POISON_SYSTEM_DIRECTORIES],
+++       [1],
+++       [Define to warn for use of native system library directories])
+++fi
+++
++ dnl Use --enable-gold to decide if this linker should be the default.
++ dnl "install_as_default" is set to false if gold is the default linker.
++ dnl "installed_linker" is the installed BFD linker name.
++--- a/ld/ld.h
+++++ b/ld/ld.h
++@@ -161,6 +161,14 @@
++   /* If set, display the target memory usage (per memory region).  */
++   bool print_memory_usage;
++ 
+++  /* If TRUE (the default) warn for uses of system directories when
+++     cross linking.  */
+++  bool poison_system_directories;
+++
+++  /* If TRUE (default FALSE) give an error for uses of system
+++     directories when cross linking instead of a warning.  */
+++  bool error_poison_system_directories;
+++
++   /* Should we force section groups to be resolved?  Controlled with
++      --force-group-allocation on the command line or FORCE_GROUP_ALLOCATION
++      in the linker script.  */
++--- a/ld/ld.texi
+++++ b/ld/ld.texi
++@@ -3119,6 +3119,18 @@
++ occurrence of the --package-metadata option.
++ If the linker has been built with libjansson, then the JSON string
++ will be validated.
+++
+++@kindex --no-poison-system-directories
+++@item --no-poison-system-directories
+++Do not warn for @option{-L} options using system directories such as
+++@file{/usr/lib} when cross linking.  This option is intended for use
+++in chroot environments when such directories contain the correct
+++libraries for the target system rather than the host.
+++
+++@kindex --error-poison-system-directories
+++@item --error-poison-system-directories
+++Give an error instead of a warning for @option{-L} options using
+++system directories when cross linking.
++ @end table
++ 
++ @c man end
++--- a/ld/ldfile.c
+++++ b/ld/ldfile.c
++@@ -327,6 +327,23 @@
++     new_dirs->name = concat (ld_sysroot, name + strlen ("$SYSROOT"), (const char *) NULL);
++   else
++     new_dirs->name = xstrdup (name);
+++
+++#ifdef ENABLE_POISON_SYSTEM_DIRECTORIES
+++  if (command_line.poison_system_directories
+++  && ((!strncmp (name, "/lib", 4))
+++      || (!strncmp (name, "/usr/lib", 8))
+++      || (!strncmp (name, "/usr/local/lib", 14))
+++      || (!strncmp (name, "/usr/X11R6/lib", 14))))
+++   {
+++     if (command_line.error_poison_system_directories)
+++       einfo (_("%X%P: error: library search path \"%s\" is unsafe for "
+++            "cross-compilation\n"), name);
+++     else
+++       einfo (_("%P: warning: library search path \"%s\" is unsafe for "
+++            "cross-compilation\n"), name);
+++   }
+++#endif
+++
++ }
++ 
++ /* Try to open a BFD for a lang_input_statement.  */
++--- a/ld/ldlex.h
+++++ b/ld/ldlex.h
++@@ -181,6 +181,8 @@
++   OPTION_DISABLE_LINKER_VERSION,
++   OPTION_REMAP_INPUTS,
++   OPTION_REMAP_INPUTS_FILE,
+++  OPTION_NO_POISON_SYSTEM_DIRECTORIES,
+++  OPTION_ERROR_POISON_SYSTEM_DIRECTORIES,
++ };
++ 
++ /* The initial parser states.  */
++--- a/ld/ldmain.c
+++++ b/ld/ldmain.c
++@@ -325,6 +325,8 @@
++   command_line.warn_mismatch = true;
++   command_line.warn_search_mismatch = true;
++   command_line.check_section_addresses = -1;
+++  command_line.poison_system_directories = true;
+++  command_line.error_poison_system_directories = true;
++ 
++   /* We initialize DEMANGLING based on the environment variable
++      COLLECT_NO_DEMANGLE.  The gcc collect2 program will demangle the
++--- a/ld/lexsup.c
+++++ b/ld/lexsup.c
++@@ -642,6 +642,14 @@
++ 		   "                                <method> is: share-unconflicted (default),\n"
++ 		   "                                             share-duplicated"),
++     TWO_DASHES },
+++  { {"no-poison-system-directories", no_argument, NULL,
+++    OPTION_NO_POISON_SYSTEM_DIRECTORIES},
+++    '\0', NULL, N_("Do not warn for -L options using system directories"),
+++    TWO_DASHES },
+++  { {"error-poison-system-directories", no_argument, NULL,
+++    OPTION_ERROR_POISON_SYSTEM_DIRECTORIES},
+++    '\0', NULL, N_("Give an error for -L options using system directories"),
+++    TWO_DASHES },
++ };
++ 
++ #define OPTION_COUNT ARRAY_SIZE (ld_options)
++@@ -654,6 +662,7 @@
++   int ingroup = 0;
++   char *default_dirlist = NULL;
++   char *shortopts;
+++  char *BR_paranoid_env;
++   struct option *longopts;
++   struct option *really_longopts;
++   int last_optind;
++@@ -1769,6 +1778,14 @@
++ 	  }
++ 	  break;
++ 
+++	case OPTION_NO_POISON_SYSTEM_DIRECTORIES:
+++	  command_line.poison_system_directories = false;
+++	  break;
+++
+++	case OPTION_ERROR_POISON_SYSTEM_DIRECTORIES:
+++	  command_line.error_poison_system_directories = true;
+++	  break;
+++
++ 	case OPTION_PUSH_STATE:
++ 	  input_flags.pushed = xmemdup (&input_flags,
++ 					sizeof (input_flags),
++@@ -1922,6 +1939,10 @@
++       command_line.soname = NULL;
++     }
++ 
+++  BR_paranoid_env = getenv("BR_COMPILER_PARANOID_UNSAFE_PATH");
+++  if (BR_paranoid_env && strlen(BR_paranoid_env) > 0)
+++    command_line.error_poison_system_directories = true;
+++
++   while (ingroup)
++     {
++       einfo (_("%P: missing --end-group; added as last command line option\n"));
+diff --git a/packages/binutils/2.42/0008-gold-Deal-with-absence-of-uchar-on-macOS.patch b/packages/binutils/2.42/0008-gold-Deal-with-absence-of-uchar-on-macOS.patch
+new file mode 100644
+index 00000000..29c3c097
+--- /dev/null
++++ b/packages/binutils/2.42/0008-gold-Deal-with-absence-of-uchar-on-macOS.patch
+@@ -0,0 +1,41 @@
++From b02df7b23474a6c87c9b2488c80b08207a77c5cb Mon Sep 17 00:00:00 2001
++From: Bryan Hundven <bryanhundven@gmail.com>
++Date: Tue, 6 Feb 2024 16:34:38 +1300
++Subject: [PATCH] gold: Deal with absence of <uchar> on macOS
++
++Add code to provide fallback definitions of char16_t/char32_t on macOS.
++---
++ gold/output.cc     | 6 ++++++
++ gold/stringpool.cc | 6 ++++++
++ 2 files changed, 12 insertions(+)
++
++diff --git a/gold/output.cc b/gold/output.cc
++index ead67f20..2dbaa2ee 100644
++--- a/gold/output.cc
+++++ b/gold/output.cc
++@@ -29,7 +29,9 @@
++ #include <unistd.h>
++ #include <sys/stat.h>
++ #include <algorithm>
+++#if !defined(__APPLE__)
++ #include <uchar.h>
+++#endif
++
++ #ifdef HAVE_SYS_MMAN_H
++ #include <sys/mman.h>
++diff --git a/gold/stringpool.cc b/gold/stringpool.cc
++index d8f38cfa..eca59bad 100644
++--- a/gold/stringpool.cc
+++++ b/gold/stringpool.cc
++@@ -25,7 +25,9 @@
++ #include <cstring>
++ #include <algorithm>
++ #include <vector>
+++#if !defined(__APPLE__)
++ #include <uchar.h>
+++#endif
++
++ #include "output.h"
++ #include "parameters.h"
++--
++2.44.0
+diff --git a/packages/binutils/2.42/chksum b/packages/binutils/2.42/chksum
+new file mode 100644
+index 00000000..681cbf75
+--- /dev/null
++++ b/packages/binutils/2.42/chksum
+@@ -0,0 +1,12 @@
++md5 binutils-2.42.tar.xz a075178a9646551379bfb64040487715
++sha1 binutils-2.42.tar.xz 44da41792c60419863d7e13fa1deaf6b24dd69b8
++sha256 binutils-2.42.tar.xz f6e4d41fd5fc778b06b7891457b3620da5ecea1006c6a4a41ae998109f85a800
++sha512 binutils-2.42.tar.xz 155f3ba14cd220102f4f29a4f1e5cfee3c48aa03b74603460d05afb73c70d6657a9d87eee6eb88bf13203fe6f31177a5c9addc04384e956e7da8069c8ecd20a6
++md5 binutils-2.42.tar.bz2 2a758b97423cd1fda443d7d33e1d8cac
++sha1 binutils-2.42.tar.bz2 ead6f01f47cf1a6c39bfaf83ab84ac99bc6d70c8
++sha256 binutils-2.42.tar.bz2 aa54850ebda5064c72cd4ec2d9b056c294252991486350d9a97ab2a6dfdfaf12
++sha512 binutils-2.42.tar.bz2 d2c6d264bbeaaaf2aad1fa3fc417c1841a5dd4a299fa47c47d15adb821c22dae733e58f19ebcfea3b0c5890ba56e4a5f92ab55128a572d585bcd5172b63f456c
++md5 binutils-2.42.tar.gz d7569f3604d986c7d7c36a15176db89d
++sha1 binutils-2.42.tar.gz 0332737873c121c43ec3860a9c53647337c38085
++sha256 binutils-2.42.tar.gz 5d2a6c1d49686a557869caae08b6c2e83699775efd27505e01b2f4db1a024ffc
++sha512 binutils-2.42.tar.gz 1e4ee462513eadd3c540e4782f9661df62ecbcd4d6297d61dcc0845ae7d30243c57571787706af3bb4d561e4350609d7057307290e81d76290a301f159a6abc5
+diff --git a/packages/binutils/2.42/version.desc b/packages/binutils/2.42/version.desc
+new file mode 100644
+index 00000000..e69de29b
+-- 
+2.34.1
+
